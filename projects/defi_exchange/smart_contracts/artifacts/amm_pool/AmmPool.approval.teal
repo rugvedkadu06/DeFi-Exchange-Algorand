@@ -1,0 +1,636 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 4 1 8
+    bytecblock "reserve_a" "reserve_b" "lp_token_supply" "token_a_id" "token_b_id" "lp_token_id" 0x151f7c75
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // smart_contracts/amm_pool/contract.py:6
+    // self.token_a_id = UInt64(0)
+    bytec_3 // "token_a_id"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:7
+    // self.token_b_id = UInt64(0)
+    bytec 4 // "token_b_id"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:8
+    // self.reserve_a = UInt64(0)
+    bytec_0 // "reserve_a"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:9
+    // self.reserve_b = UInt64(0)
+    bytec_1 // "reserve_b"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:10
+    // self.lp_token_id = UInt64(0)
+    bytec 5 // "lp_token_id"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:11
+    // self.lp_token_supply = UInt64(0)
+    bytec_2 // "lp_token_supply"
+    intc_0 // 0
+    app_global_put
+
+main_after_if_else@2:
+    // smart_contracts/amm_pool/contract.py:4
+    // class AmmPool(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@13
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0x444359cc 0x01472cbc 0x2eadc819 0xb5a43eeb // method "create_pool(uint64,uint64)uint64", method "add_liquidity(axfer,axfer)uint64", method "remove_liquidity(axfer)void", method "get_reserves()(uint64,uint64)"
+    txna ApplicationArgs 0
+    match create_pool add_liquidity remove_liquidity get_reserves
+    err
+
+main___algopy_default_create@13:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.amm_pool.contract.AmmPool.create_pool[routing]() -> void:
+create_pool:
+    // smart_contracts/amm_pool/contract.py:13
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // smart_contracts/amm_pool/contract.py:16
+    // assert self.token_a_id == 0, "Pool already initialized"
+    intc_0 // 0
+    bytec_3 // "token_a_id"
+    app_global_get_ex
+    assert // check self.token_a_id exists
+    !
+    assert // Pool already initialized
+    // smart_contracts/amm_pool/contract.py:18
+    // self.token_a_id = token_a.id
+    bytec_3 // "token_a_id"
+    dig 2
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:19
+    // self.token_b_id = token_b.id
+    bytec 4 // "token_b_id"
+    dig 1
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:21-26
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_a,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:24
+    // asset_receiver=Global.current_application_address,
+    global CurrentApplicationAddress
+    // smart_contracts/amm_pool/contract.py:25
+    // asset_amount=0,
+    intc_0 // 0
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    swap
+    itxn_field XferAsset
+    // smart_contracts/amm_pool/contract.py:21-22
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    intc_1 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:21-26
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_a,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/amm_pool/contract.py:27-31
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_b,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:29
+    // asset_receiver=Global.current_application_address,
+    global CurrentApplicationAddress
+    // smart_contracts/amm_pool/contract.py:30
+    // asset_amount=0,
+    intc_0 // 0
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // smart_contracts/amm_pool/contract.py:27
+    // itxn.AssetTransfer(
+    intc_1 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:27-31
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_b,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/amm_pool/contract.py:33-40
+    // # Create LP token
+    // lp_asset = itxn.AssetConfig(
+    //     asset_name="DEX-LP-TOKEN",
+    //     unit_name="LP",
+    //     total=10_000_000_000_000, # Large supply
+    //     decimals=6,
+    //     manager=Global.current_application_address,
+    // ).submit().created_asset
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:39
+    // manager=Global.current_application_address,
+    global CurrentApplicationAddress
+    itxn_field ConfigAssetManager
+    // smart_contracts/amm_pool/contract.py:38
+    // decimals=6,
+    pushint 6
+    itxn_field ConfigAssetDecimals
+    // smart_contracts/amm_pool/contract.py:37
+    // total=10_000_000_000_000, # Large supply
+    pushint 10000000000000
+    itxn_field ConfigAssetTotal
+    // smart_contracts/amm_pool/contract.py:36
+    // unit_name="LP",
+    pushbytes "LP"
+    itxn_field ConfigAssetUnitName
+    // smart_contracts/amm_pool/contract.py:35
+    // asset_name="DEX-LP-TOKEN",
+    pushbytes "DEX-LP-TOKEN"
+    itxn_field ConfigAssetName
+    // smart_contracts/amm_pool/contract.py:33-34
+    // # Create LP token
+    // lp_asset = itxn.AssetConfig(
+    pushint 3 // acfg
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:33-40
+    // # Create LP token
+    // lp_asset = itxn.AssetConfig(
+    //     asset_name="DEX-LP-TOKEN",
+    //     unit_name="LP",
+    //     total=10_000_000_000_000, # Large supply
+    //     decimals=6,
+    //     manager=Global.current_application_address,
+    // ).submit().created_asset
+    itxn_submit
+    itxn CreatedAssetID
+    // smart_contracts/amm_pool/contract.py:42
+    // self.lp_token_id = lp_asset.id
+    bytec 5 // "lp_token_id"
+    dig 1
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:13
+    // @abimethod()
+    itob
+    bytec 6 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_2 // 1
+    return
+
+
+// smart_contracts.amm_pool.contract.AmmPool.add_liquidity[routing]() -> void:
+add_liquidity:
+    // smart_contracts/amm_pool/contract.py:45
+    // @abimethod()
+    txn GroupIndex
+    pushint 2
+    -
+    dupn 2
+    gtxns TypeEnum
+    intc_1 // axfer
+    ==
+    assert // transaction type is axfer
+    txn GroupIndex
+    intc_2 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_1 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/amm_pool/contract.py:48
+    // assert axfer_a.xfer_asset.id == self.token_a_id, "Invalid token A"
+    dig 1
+    gtxns XferAsset
+    intc_0 // 0
+    bytec_3 // "token_a_id"
+    app_global_get_ex
+    assert // check self.token_a_id exists
+    ==
+    assert // Invalid token A
+    // smart_contracts/amm_pool/contract.py:49
+    // assert axfer_b.xfer_asset.id == self.token_b_id, "Invalid token B"
+    dup
+    gtxns XferAsset
+    intc_0 // 0
+    bytec 4 // "token_b_id"
+    app_global_get_ex
+    assert // check self.token_b_id exists
+    ==
+    assert // Invalid token B
+    // smart_contracts/amm_pool/contract.py:50
+    // assert axfer_a.asset_receiver == Global.current_application_address
+    dig 1
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert
+    // smart_contracts/amm_pool/contract.py:51
+    // assert axfer_b.asset_receiver == Global.current_application_address
+    dup
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert
+    // smart_contracts/amm_pool/contract.py:53
+    // amt_a = axfer_a.asset_amount
+    swap
+    gtxns AssetAmount
+    swap
+    // smart_contracts/amm_pool/contract.py:54
+    // amt_b = axfer_b.asset_amount
+    gtxns AssetAmount
+    // smart_contracts/amm_pool/contract.py:57
+    // if self.lp_token_supply == 0:
+    intc_0 // 0
+    bytec_2 // "lp_token_supply"
+    app_global_get_ex
+    assert // check self.lp_token_supply exists
+    bnz add_liquidity_else_body@3
+    dig 1
+
+add_liquidity_after_if_else@4:
+    // smart_contracts/amm_pool/contract.py:66
+    // assert mint_amount > 0, "Insufficient liquidity"
+    dup
+    assert // Insufficient liquidity
+    // smart_contracts/amm_pool/contract.py:68
+    // self.reserve_a += amt_a
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 3
+    +
+    bytec_0 // "reserve_a"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:69
+    // self.reserve_b += amt_b
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    dig 2
+    +
+    bytec_1 // "reserve_b"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:70
+    // self.lp_token_supply += mint_amount
+    intc_0 // 0
+    bytec_2 // "lp_token_supply"
+    app_global_get_ex
+    assert // check self.lp_token_supply exists
+    dig 1
+    +
+    bytec_2 // "lp_token_supply"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:72-77
+    // # Transfer LP tokens to user
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.lp_token_id),
+    //     asset_receiver=axfer_a.sender,
+    //     asset_amount=mint_amount,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:74
+    // xfer_asset=Asset(self.lp_token_id),
+    intc_0 // 0
+    bytec 5 // "lp_token_id"
+    app_global_get_ex
+    assert // check self.lp_token_id exists
+    // smart_contracts/amm_pool/contract.py:75
+    // asset_receiver=axfer_a.sender,
+    dig 4
+    gtxns Sender
+    dig 2
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // smart_contracts/amm_pool/contract.py:72-73
+    // # Transfer LP tokens to user
+    // itxn.AssetTransfer(
+    intc_1 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:72-77
+    // # Transfer LP tokens to user
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.lp_token_id),
+    //     asset_receiver=axfer_a.sender,
+    //     asset_amount=mint_amount,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/amm_pool/contract.py:45
+    // @abimethod()
+    itob
+    bytec 6 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_2 // 1
+    return
+
+add_liquidity_else_body@3:
+    // smart_contracts/amm_pool/contract.py:61-62
+    // # Proportional minting
+    // mint_a = (amt_a * self.lp_token_supply) // self.reserve_a
+    intc_0 // 0
+    bytec_2 // "lp_token_supply"
+    app_global_get_ex
+    assert // check self.lp_token_supply exists
+    dig 2
+    dig 1
+    *
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    /
+    // smart_contracts/amm_pool/contract.py:63
+    // mint_b = (amt_b * self.lp_token_supply) // self.reserve_b
+    dig 2
+    uncover 2
+    *
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    /
+    // smart_contracts/amm_pool/contract.py:64
+    // mint_amount = mint_a if mint_a < mint_b else mint_b
+    dup2
+    <
+    swap
+    cover 2
+    select
+    b add_liquidity_after_if_else@4
+
+
+// smart_contracts.amm_pool.contract.AmmPool.remove_liquidity[routing]() -> void:
+remove_liquidity:
+    // smart_contracts/amm_pool/contract.py:81
+    // @abimethod()
+    txn GroupIndex
+    intc_2 // 1
+    -
+    dupn 2
+    gtxns TypeEnum
+    intc_1 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/amm_pool/contract.py:84
+    // assert lp_axfer.xfer_asset.id == self.lp_token_id
+    dup
+    gtxns XferAsset
+    intc_0 // 0
+    bytec 5 // "lp_token_id"
+    app_global_get_ex
+    assert // check self.lp_token_id exists
+    ==
+    assert
+    // smart_contracts/amm_pool/contract.py:85
+    // assert lp_axfer.asset_receiver == Global.current_application_address
+    dup
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert
+    // smart_contracts/amm_pool/contract.py:86
+    // assert self.lp_token_supply > 0
+    intc_0 // 0
+    bytec_2 // "lp_token_supply"
+    app_global_get_ex
+    assert // check self.lp_token_supply exists
+    dup
+    assert
+    // smart_contracts/amm_pool/contract.py:88
+    // lp_amt = lp_axfer.asset_amount
+    swap
+    gtxns AssetAmount
+    dup
+    cover 2
+    // smart_contracts/amm_pool/contract.py:89
+    // out_a = (lp_amt * self.reserve_a) // self.lp_token_supply
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 1
+    *
+    dig 2
+    /
+    dup
+    cover 3
+    cover 3
+    // smart_contracts/amm_pool/contract.py:90
+    // out_b = (lp_amt * self.reserve_b) // self.lp_token_supply
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    *
+    swap
+    /
+    swap
+    // smart_contracts/amm_pool/contract.py:92
+    // assert out_a > 0 and out_b > 0, "Insufficient LP tokens for withdrawal"
+    bz remove_liquidity_bool_false@4
+    dup
+    bz remove_liquidity_bool_false@4
+    intc_2 // 1
+
+remove_liquidity_bool_merge@5:
+    // smart_contracts/amm_pool/contract.py:92
+    // assert out_a > 0 and out_b > 0, "Insufficient LP tokens for withdrawal"
+    assert // Insufficient LP tokens for withdrawal
+    // smart_contracts/amm_pool/contract.py:94
+    // self.reserve_a -= out_a
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 2
+    dup
+    cover 2
+    -
+    bytec_0 // "reserve_a"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:95
+    // self.reserve_b -= out_b
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    dig 2
+    dup
+    cover 3
+    -
+    bytec_1 // "reserve_b"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:96
+    // self.lp_token_supply -= lp_amt
+    intc_0 // 0
+    bytec_2 // "lp_token_supply"
+    app_global_get_ex
+    assert // check self.lp_token_supply exists
+    dig 5
+    -
+    bytec_2 // "lp_token_supply"
+    swap
+    app_global_put
+    // smart_contracts/amm_pool/contract.py:98-103
+    // # Send tokens back to user
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_a_id),
+    //     asset_receiver=lp_axfer.sender,
+    //     asset_amount=out_a,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:100
+    // xfer_asset=Asset(self.token_a_id),
+    intc_0 // 0
+    bytec_3 // "token_a_id"
+    app_global_get_ex
+    assert // check self.token_a_id exists
+    // smart_contracts/amm_pool/contract.py:101
+    // asset_receiver=lp_axfer.sender,
+    dig 6
+    gtxns Sender
+    uncover 2
+    itxn_field AssetAmount
+    dup
+    itxn_field AssetReceiver
+    swap
+    itxn_field XferAsset
+    // smart_contracts/amm_pool/contract.py:98-99
+    // # Send tokens back to user
+    // itxn.AssetTransfer(
+    intc_1 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:98-103
+    // # Send tokens back to user
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_a_id),
+    //     asset_receiver=lp_axfer.sender,
+    //     asset_amount=out_a,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/amm_pool/contract.py:105-109
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_b_id),
+    //     asset_receiver=lp_axfer.sender,
+    //     asset_amount=out_b,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/amm_pool/contract.py:106
+    // xfer_asset=Asset(self.token_b_id),
+    intc_0 // 0
+    bytec 4 // "token_b_id"
+    app_global_get_ex
+    assert // check self.token_b_id exists
+    uncover 2
+    itxn_field AssetAmount
+    itxn_field XferAsset
+    itxn_field AssetReceiver
+    // smart_contracts/amm_pool/contract.py:105
+    // itxn.AssetTransfer(
+    intc_1 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/amm_pool/contract.py:105-109
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_b_id),
+    //     asset_receiver=lp_axfer.sender,
+    //     asset_amount=out_b,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/amm_pool/contract.py:81
+    // @abimethod()
+    intc_2 // 1
+    return
+
+remove_liquidity_bool_false@4:
+    intc_0 // 0
+    b remove_liquidity_bool_merge@5
+
+
+// smart_contracts.amm_pool.contract.AmmPool.get_reserves[routing]() -> void:
+get_reserves:
+    // smart_contracts/amm_pool/contract.py:114
+    // return (self.reserve_a, self.reserve_b)
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    // smart_contracts/amm_pool/contract.py:111
+    // @abimethod()
+    swap
+    itob
+    swap
+    itob
+    concat
+    bytec 6 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_2 // 1
+    return

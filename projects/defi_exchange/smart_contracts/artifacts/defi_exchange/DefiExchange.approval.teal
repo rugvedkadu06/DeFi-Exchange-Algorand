@@ -1,0 +1,218 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 1 8 0 4
+    bytecblock "pools_count" "admin_address" 0x151f7c75
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // smart_contracts/defi_exchange/contract.py:6
+    // self.pools_count = UInt64(0)
+    bytec_0 // "pools_count"
+    intc_2 // 0
+    app_global_put
+    // smart_contracts/defi_exchange/contract.py:7
+    // self.admin_address = Global.creator_address
+    bytec_1 // "admin_address"
+    global CreatorAddress
+    app_global_put
+
+main_after_if_else@2:
+    // smart_contracts/defi_exchange/contract.py:4
+    // class DefiExchange(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@14
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0x3c4630e2 0x5dada6cd 0xbc079c32 0x5e6a4de6 0x965e8ce4 // method "register_pool(uint64,uint64)uint64", method "deposit_asset(axfer)void", method "withdraw_asset(uint64,uint64)void", method "execute_swap(uint64,axfer)void", method "get_pool_info(uint64)uint64"
+    txna ApplicationArgs 0
+    match register_pool deposit_asset withdraw_asset execute_swap get_pool_info
+    err
+
+main___algopy_default_create@14:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.defi_exchange.contract.DefiExchange.register_pool[routing]() -> void:
+register_pool:
+    // smart_contracts/defi_exchange/contract.py:11
+    // @abimethod()
+    txna ApplicationArgs 1
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 2
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // smart_contracts/defi_exchange/contract.py:14-15
+    // # Verification: Only admin can register pools in this simplified model
+    // assert Global.creator_address == self.admin_address, "Unauthorized"
+    global CreatorAddress
+    intc_2 // 0
+    bytec_1 // "admin_address"
+    app_global_get_ex
+    assert // check self.admin_address exists
+    ==
+    assert // Unauthorized
+    // smart_contracts/defi_exchange/contract.py:17
+    // pool_id = self.pools_count
+    intc_2 // 0
+    bytec_0 // "pools_count"
+    app_global_get_ex
+    assert // check self.pools_count exists
+    // smart_contracts/defi_exchange/contract.py:18
+    // self.pools_count += 1
+    dup
+    intc_0 // 1
+    +
+    bytec_0 // "pools_count"
+    swap
+    app_global_put
+    // smart_contracts/defi_exchange/contract.py:11
+    // @abimethod()
+    itob
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return
+
+
+// smart_contracts.defi_exchange.contract.DefiExchange.deposit_asset[routing]() -> void:
+deposit_asset:
+    // smart_contracts/defi_exchange/contract.py:23
+    // @abimethod()
+    txn GroupIndex
+    intc_0 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_3 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/defi_exchange/contract.py:26
+    // assert axfer.asset_receiver == Global.current_application_address, "Invalid receiver"
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert // Invalid receiver
+    // smart_contracts/defi_exchange/contract.py:23
+    // @abimethod()
+    intc_0 // 1
+    return
+
+
+// smart_contracts.defi_exchange.contract.DefiExchange.withdraw_asset[routing]() -> void:
+withdraw_asset:
+    // smart_contracts/defi_exchange/contract.py:29
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // smart_contracts/defi_exchange/contract.py:32-37
+    // # Simplified: Send directly to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=asset,
+    //     asset_receiver=Global.current_application_address, # Should be Txn.sender
+    //     asset_amount=amount,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/defi_exchange/contract.py:35
+    // asset_receiver=Global.current_application_address, # Should be Txn.sender
+    global CurrentApplicationAddress
+    itxn_field AssetReceiver
+    itxn_field AssetAmount
+    itxn_field XferAsset
+    // smart_contracts/defi_exchange/contract.py:32-33
+    // # Simplified: Send directly to sender
+    // itxn.AssetTransfer(
+    intc_3 // axfer
+    itxn_field TypeEnum
+    intc_2 // 0
+    itxn_field Fee
+    // smart_contracts/defi_exchange/contract.py:32-37
+    // # Simplified: Send directly to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=asset,
+    //     asset_receiver=Global.current_application_address, # Should be Txn.sender
+    //     asset_amount=amount,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/defi_exchange/contract.py:29
+    // @abimethod()
+    intc_0 // 1
+    return
+
+
+// smart_contracts.defi_exchange.contract.DefiExchange.execute_swap[routing]() -> void:
+execute_swap:
+    // smart_contracts/defi_exchange/contract.py:39
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txn GroupIndex
+    intc_0 // 1
+    -
+    gtxns TypeEnum
+    intc_3 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/defi_exchange/contract.py:42
+    // assert pool_id < self.pools_count, "Pool does not exist"
+    intc_2 // 0
+    bytec_0 // "pools_count"
+    app_global_get_ex
+    assert // check self.pools_count exists
+    <
+    assert // Pool does not exist
+    // smart_contracts/defi_exchange/contract.py:39
+    // @abimethod()
+    intc_0 // 1
+    return
+
+
+// smart_contracts.defi_exchange.contract.DefiExchange.get_pool_info[routing]() -> void:
+get_pool_info:
+    // smart_contracts/defi_exchange/contract.py:46
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_1 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_0 // 1
+    return

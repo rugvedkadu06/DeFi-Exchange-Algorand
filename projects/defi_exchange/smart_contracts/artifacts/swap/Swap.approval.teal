@@ -1,0 +1,520 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1 8 4
+    bytecblock "reserve_a" "reserve_b" "token_a" "token_b" 0x151f7c75
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // smart_contracts/swap/contract.py:6
+    // self.reserve_a = UInt64(0)
+    bytec_0 // "reserve_a"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/swap/contract.py:7
+    // self.reserve_b = UInt64(0)
+    bytec_1 // "reserve_b"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/swap/contract.py:8
+    // self.token_a = UInt64(0)
+    bytec_2 // "token_a"
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/swap/contract.py:9
+    // self.token_b = UInt64(0)
+    bytec_3 // "token_b"
+    intc_0 // 0
+    app_global_put
+
+main_after_if_else@2:
+    // smart_contracts/swap/contract.py:4
+    // class Swap(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@14
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0x80b16210 0x1e81cf22 0xe68fb280 0xb303d999 0x3820f58d // method "initialize_swap(uint64,uint64)void", method "calculate_output(uint64,uint64,uint64)uint64", method "swap_a_to_b(axfer)uint64", method "swap_b_to_a(axfer)uint64", method "update_reserves(uint64,uint64)void"
+    txna ApplicationArgs 0
+    match initialize_swap calculate_output swap_a_to_b swap_b_to_a update_reserves
+    err
+
+main___algopy_default_create@14:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.swap.contract.Swap.initialize_swap[routing]() -> void:
+initialize_swap:
+    // smart_contracts/swap/contract.py:11
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // smart_contracts/swap/contract.py:14
+    // assert self.token_a == 0, "Already initialized"
+    intc_0 // 0
+    bytec_2 // "token_a"
+    app_global_get_ex
+    assert // check self.token_a exists
+    !
+    assert // Already initialized
+    // smart_contracts/swap/contract.py:15
+    // self.token_a = token_a.id
+    bytec_2 // "token_a"
+    dig 2
+    app_global_put
+    // smart_contracts/swap/contract.py:16
+    // self.token_b = token_b.id
+    bytec_3 // "token_b"
+    dig 1
+    app_global_put
+    // smart_contracts/swap/contract.py:18-23
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_a,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/swap/contract.py:21
+    // asset_receiver=Global.current_application_address,
+    global CurrentApplicationAddress
+    // smart_contracts/swap/contract.py:22
+    // asset_amount=0,
+    intc_0 // 0
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    swap
+    itxn_field XferAsset
+    // smart_contracts/swap/contract.py:18-19
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    intc_3 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/swap/contract.py:18-23
+    // # Opt-in to tokens
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_a,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/swap/contract.py:24-28
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_b,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/swap/contract.py:26
+    // asset_receiver=Global.current_application_address,
+    global CurrentApplicationAddress
+    // smart_contracts/swap/contract.py:27
+    // asset_amount=0,
+    intc_0 // 0
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // smart_contracts/swap/contract.py:24
+    // itxn.AssetTransfer(
+    intc_3 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/swap/contract.py:24-28
+    // itxn.AssetTransfer(
+    //     xfer_asset=token_b,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/swap/contract.py:11
+    // @abimethod()
+    intc_1 // 1
+    return
+
+
+// smart_contracts.swap.contract.Swap.calculate_output[routing]() -> void:
+calculate_output:
+    // smart_contracts/swap/contract.py:30
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 3
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    callsub smart_contracts.swap.contract.Swap.calculate_output
+    itob
+    bytec 4 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// smart_contracts.swap.contract.Swap.swap_a_to_b[routing]() -> void:
+swap_a_to_b:
+    // smart_contracts/swap/contract.py:36
+    // @abimethod()
+    txn GroupIndex
+    intc_1 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_3 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/swap/contract.py:39
+    // assert axfer.xfer_asset.id == self.token_a, "Invalid asset"
+    dup
+    gtxns XferAsset
+    intc_0 // 0
+    bytec_2 // "token_a"
+    app_global_get_ex
+    assert // check self.token_a exists
+    ==
+    assert // Invalid asset
+    // smart_contracts/swap/contract.py:40
+    // assert axfer.asset_receiver == Global.current_application_address
+    dup
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert
+    // smart_contracts/swap/contract.py:42
+    // amount_in = axfer.asset_amount
+    dup
+    gtxns AssetAmount
+    // smart_contracts/swap/contract.py:43
+    // amount_out = self.calculate_output(amount_in, self.reserve_a, self.reserve_b)
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    dig 2
+    cover 2
+    callsub smart_contracts.swap.contract.Swap.calculate_output
+    // smart_contracts/swap/contract.py:45
+    // assert amount_out > 0, "Swap results in zero output"
+    dup
+    assert // Swap results in zero output
+    // smart_contracts/swap/contract.py:46
+    // assert amount_out < self.reserve_b, "Insufficient reserve B"
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    dig 1
+    >
+    assert // Insufficient reserve B
+    // smart_contracts/swap/contract.py:48-49
+    // # Update reserves
+    // self.reserve_a += amount_in
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    uncover 2
+    +
+    bytec_0 // "reserve_a"
+    swap
+    app_global_put
+    // smart_contracts/swap/contract.py:50
+    // self.reserve_b -= amount_out
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    dig 1
+    -
+    bytec_1 // "reserve_b"
+    swap
+    app_global_put
+    // smart_contracts/swap/contract.py:52-57
+    // # Transfer token B to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_b),
+    //     asset_receiver=axfer.sender,
+    //     asset_amount=amount_out,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/swap/contract.py:54
+    // xfer_asset=Asset(self.token_b),
+    intc_0 // 0
+    bytec_3 // "token_b"
+    app_global_get_ex
+    assert // check self.token_b exists
+    // smart_contracts/swap/contract.py:55
+    // asset_receiver=axfer.sender,
+    uncover 2
+    gtxns Sender
+    dig 2
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // smart_contracts/swap/contract.py:52-53
+    // # Transfer token B to sender
+    // itxn.AssetTransfer(
+    intc_3 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/swap/contract.py:52-57
+    // # Transfer token B to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_b),
+    //     asset_receiver=axfer.sender,
+    //     asset_amount=amount_out,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/swap/contract.py:36
+    // @abimethod()
+    itob
+    bytec 4 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// smart_contracts.swap.contract.Swap.swap_b_to_a[routing]() -> void:
+swap_b_to_a:
+    // smart_contracts/swap/contract.py:61
+    // @abimethod()
+    txn GroupIndex
+    intc_1 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_3 // axfer
+    ==
+    assert // transaction type is axfer
+    // smart_contracts/swap/contract.py:64
+    // assert axfer.xfer_asset.id == self.token_b, "Invalid asset"
+    dup
+    gtxns XferAsset
+    intc_0 // 0
+    bytec_3 // "token_b"
+    app_global_get_ex
+    assert // check self.token_b exists
+    ==
+    assert // Invalid asset
+    // smart_contracts/swap/contract.py:65
+    // assert axfer.asset_receiver == Global.current_application_address
+    dup
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    assert
+    // smart_contracts/swap/contract.py:67
+    // amount_in = axfer.asset_amount
+    dup
+    gtxns AssetAmount
+    // smart_contracts/swap/contract.py:68
+    // amount_out = self.calculate_output(amount_in, self.reserve_b, self.reserve_a)
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 2
+    cover 2
+    callsub smart_contracts.swap.contract.Swap.calculate_output
+    // smart_contracts/swap/contract.py:70
+    // assert amount_out > 0, "Swap results in zero output"
+    dup
+    assert // Swap results in zero output
+    // smart_contracts/swap/contract.py:71
+    // assert amount_out < self.reserve_a, "Insufficient reserve A"
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 1
+    >
+    assert // Insufficient reserve A
+    // smart_contracts/swap/contract.py:73-74
+    // # Update reserves
+    // self.reserve_b += amount_in
+    intc_0 // 0
+    bytec_1 // "reserve_b"
+    app_global_get_ex
+    assert // check self.reserve_b exists
+    uncover 2
+    +
+    bytec_1 // "reserve_b"
+    swap
+    app_global_put
+    // smart_contracts/swap/contract.py:75
+    // self.reserve_a -= amount_out
+    intc_0 // 0
+    bytec_0 // "reserve_a"
+    app_global_get_ex
+    assert // check self.reserve_a exists
+    dig 1
+    -
+    bytec_0 // "reserve_a"
+    swap
+    app_global_put
+    // smart_contracts/swap/contract.py:77-82
+    // # Transfer token A to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_a),
+    //     asset_receiver=axfer.sender,
+    //     asset_amount=amount_out,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/swap/contract.py:79
+    // xfer_asset=Asset(self.token_a),
+    intc_0 // 0
+    bytec_2 // "token_a"
+    app_global_get_ex
+    assert // check self.token_a exists
+    // smart_contracts/swap/contract.py:80
+    // asset_receiver=axfer.sender,
+    uncover 2
+    gtxns Sender
+    dig 2
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // smart_contracts/swap/contract.py:77-78
+    // # Transfer token A to sender
+    // itxn.AssetTransfer(
+    intc_3 // axfer
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/swap/contract.py:77-82
+    // # Transfer token A to sender
+    // itxn.AssetTransfer(
+    //     xfer_asset=Asset(self.token_a),
+    //     asset_receiver=axfer.sender,
+    //     asset_amount=amount_out,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/swap/contract.py:61
+    // @abimethod()
+    itob
+    bytec 4 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// smart_contracts.swap.contract.Swap.update_reserves[routing]() -> void:
+update_reserves:
+    // smart_contracts/swap/contract.py:86
+    // @abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // smart_contracts/swap/contract.py:89-90
+    // # In a real system, this would be restricted to the admin or AMM pool contract
+    // self.reserve_a = res_a
+    bytec_0 // "reserve_a"
+    uncover 2
+    app_global_put
+    // smart_contracts/swap/contract.py:91
+    // self.reserve_b = res_b
+    bytec_1 // "reserve_b"
+    swap
+    app_global_put
+    // smart_contracts/swap/contract.py:86
+    // @abimethod()
+    intc_1 // 1
+    return
+
+
+// smart_contracts.swap.contract.Swap.calculate_output(amount_in: uint64, reserve_in: uint64, reserve_out: uint64) -> uint64:
+smart_contracts.swap.contract.Swap.calculate_output:
+    // smart_contracts/swap/contract.py:30-31
+    // @abimethod()
+    // def calculate_output(self, amount_in: UInt64, reserve_in: UInt64, reserve_out: UInt64) -> UInt64:
+    proto 3 1
+    // smart_contracts/swap/contract.py:33
+    // assert reserve_in > 0 and reserve_out > 0, "Insufficient liquidity"
+    frame_dig -2
+    bz smart_contracts.swap.contract.Swap.calculate_output_bool_false@3
+    frame_dig -1
+    bz smart_contracts.swap.contract.Swap.calculate_output_bool_false@3
+    intc_1 // 1
+
+smart_contracts.swap.contract.Swap.calculate_output_bool_merge@4:
+    // smart_contracts/swap/contract.py:33
+    // assert reserve_in > 0 and reserve_out > 0, "Insufficient liquidity"
+    assert // Insufficient liquidity
+    // smart_contracts/swap/contract.py:34
+    // return (reserve_out * amount_in) // (reserve_in + amount_in)
+    frame_dig -1
+    frame_dig -3
+    *
+    frame_dig -2
+    frame_dig -3
+    +
+    /
+    retsub
+
+smart_contracts.swap.contract.Swap.calculate_output_bool_false@3:
+    intc_0 // 0
+    b smart_contracts.swap.contract.Swap.calculate_output_bool_merge@4
